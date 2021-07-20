@@ -121,7 +121,7 @@ namespace esl_test
                     ">> Tag ID: " + item.TagID +
                     ", Status: " + item.TagStatus +
                     ", Temperature: " + item.Temperature +
-                    " , Power: " + item.PowerValue +
+                    ", Power: " + item.PowerValue +
                     ", Signal: " + item.Signal +
                     ", Token: " + item.Token
                 );
