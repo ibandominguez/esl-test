@@ -16,7 +16,7 @@ namespace esl_test
         static void Main(String[] args)
         {
             SetupServer();
-            ShowWelcomeMessage();
+            RenderConsole("Configure your ESL");
             SendTestDemo();
 
             Console.ReadKey();
@@ -24,15 +24,17 @@ namespace esl_test
             Console.ReadKey();
         }
 
-        private static void ShowWelcomeMessage()
+        private static void RenderConsole(String append)
         {
             Console.Clear();
-            Console.WriteLine(">>>>>> ESL Test");
+            Console.WriteLine(">>>>>> Barnapes ESL Test");
             Console.WriteLine(">>>>>> Test out your demo kit.\n");
-            Console.WriteLine("This is the default configuration:");
+            Console.WriteLine("Current configuration:");
             Console.WriteLine("Access Point ID: {0}\nShop ID: {1}\nESL ID: {2}\n", AP_ID, SHOP_ID, ESL_ID);
-            Console.WriteLine("> Press Enter to update the ESL:");
-            Console.ReadKey();
+
+            if (!String.IsNullOrEmpty(append)) {
+                Console.WriteLine(append);
+            }
         }
 
         private static void SetupServer()
@@ -45,6 +47,9 @@ namespace esl_test
         private static void SendTestDemo()
         {
             Random random = new Random(DateTime.Now.Millisecond);
+            String title = GetUserString("Title");
+            String price = GetUserString("Price");
+            String barcode = GetUserString("Barcode");
 
             var result = Server.Instance.Send(
                 SHOP_ID,
@@ -63,7 +68,7 @@ namespace esl_test
                             ID = 0,
                             Top = 1,                            // Location, top 1px
                             Left = 1,                           // Location, left 1px
-                            Data = "Hello World! ?? ABC123",    // Text data
+                            Data = title,                       // Text data
                             InvertColor = true,                 // Yes, invert color
                             TextSize = TextSize.u16px           // Text size is 16px
                         },
@@ -72,7 +77,7 @@ namespace esl_test
                             ID = 1,
                             Top = 20,
                             Left = 10,
-                            Data = "$9.87",
+                            Data = price,
                             Color = FontColor.Red,
                             PriceSize = PriceSize.p32_16px
                         },
@@ -81,7 +86,7 @@ namespace esl_test
                             ID = 2,
                             Top = 60,
                             Left = 5,
-                            Data = "1234567890",
+                            Data = barcode,
                             BarcodeType = BarcodeType.Code128,
                             Height = 30
                         }
@@ -91,37 +96,41 @@ namespace esl_test
                 true
             );
 
-            Console.Clear();
-            Console.WriteLine(">>>>>> ESL Test Result:\n{0}", result);
+            RenderConsole(">> AP Response: " + result);
+        }
+
+        private static String GetUserString(String key)
+        {
+            Console.Write("{0}: ", key);
+            String userInput = Console.ReadLine();
+            return String.IsNullOrEmpty(userInput) ? GetUserString(key) : userInput;
         }
 
         private static void Instance_ResultEventHandler(Object sender, ResultEventArgs e)
         {
-            Console.WriteLine(
-                "Shop Code:{0}, AP:{1}, Result Type:{2}, Count:{3}",
-                e.ShopCode,
-                e.StationID,
-                e.ResultType,
-                e.ResultList.Count
+            RenderConsole(
+                ">> Shop Code: " + e.ShopCode +
+                ", AP: " + e.StationID +
+                ", Result Type: " + e.ResultType +
+                ", Count: " + e.ResultList.Count
             );
 
             foreach (var item in e.ResultList)
             {
-                Console.WriteLine(
-                    ">> Tag ID:{0}, Status:{1}, Temperature:{2}, Power:{3}, Signal:{4}, Token:{5}",
-                    item.TagID,
-                    item.TagStatus,
-                    item.Temperature,
-                    item.PowerValue,
-                    item.Signal,
-                    item.Token
+                RenderConsole(
+                    ">> Tag ID: " + item.TagID +
+                    ", Status: " + item.TagStatus +
+                    ", Temperature: " + item.Temperature +
+                    " , Power: " + item.PowerValue +
+                    ", Signal: " + item.Signal +
+                    ", Token: " + item.Token
                 );
             }
         }
 
         private static void Instance_StationEventHandler(Object sender, StationEventArgs e)
         {
-            Console.WriteLine("Shop Code:{0} AP: {1} IP:{2} Online:{3}", e.ShopCode, e.StationID, e.IP, e.Online);
+            RenderConsole("Shop Code: " + e.ShopCode + " AP: " + e.StationID + " IP: " + e.IP + " Online: " + e.Online);
         }
     }
 }
